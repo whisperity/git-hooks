@@ -5,12 +5,12 @@
 
 # ---- Setup ----
 
-SWEARWORDS="$(dirname $0)/swearwords.txt"
+SWEARWORDS="$(dirname $0)/../swearwords.txt"
 if [[ ! -f "${SWEARWORDS}" ]]
 then
     # Script might be running via a symlink...
     REAL_ME=$(readlink -f $0)
-    SWEARWORDS="$(dirname ${REAL_ME})/swearwords.txt"
+    SWEARWORDS="$(dirname ${REAL_ME})/../swearwords.txt"
 fi
 
 if [[ ! -f "${SWEARWORDS}" ]]
