@@ -1,0 +1,73 @@
+#!/bin/bash
+#
+# Checks the changed lines in the to-be-committed diff for swear words, and
+# aborts the commit if any is found.
+
+# ---- Setup ----
+
+SWEARWORDS="$(dirname $0)/swearwords.txt"
+if [[ ! -f "${SWEARWORDS}" ]]
+then
+    # Script might be running via a symlink...
+    REAL_ME=$(readlink -f $0)
+    SWEARWORDS="$(dirname ${REAL_ME})/swearwords.txt"
+fi
+
+if [[ ! -f "${SWEARWORDS}" ]]
+then
+    echo "No 'swearwords.txt' found next to hook - bogus setup?" >&2
+    echo "Ignoring..." >&2
+    exit 1
+fi
+
+# Cut comments from the swearing file.
+SWEARWORDS_TEMP=$(mktemp --suffix="swear")
+if [[ $? -ne 0 ]]
+then
+    echo "$0: failed to create temporary swear file" >&2
+    exit 1
+fi
+cat "${SWEARWORDS}" | grep -v "^#" | grep -v -e '^$' > "${SWEARWORDS_TEMP}"
+SWEARWORDS="${SWEARWORDS_TEMP}"
+unset SWEARWORDS_TEMP
+
+# ---- Logic ----
+
+FOUND_SWEARING=0
+FILE="<unknown>"
+while read LINE
+do
+    CHECK_FILE=$(echo $LINE | grep "^+++" - | cut -c5-)
+    if [[ ! -z "${CHECK_FILE}" ]]
+    then
+        # Going forward in the diff indicates a new file's diff is started.
+        FILE=${CHECK_FILE}
+        continue
+    fi
+
+    SWEAR_MATCH=$(echo $LINE | cut -c2- | grep -e -E -s -f "${SWEARWORDS}" -)
+    if [[ $? -eq 0 ]]
+    then
+        echo "${FILE}: ${SWEAR_MATCH}" >&2
+        FOUND_SWEARING=1
+    fi
+done <<<$(git diff      \
+        --cached        \
+        --no-ext-diff   \
+        --dst-prefix="" \
+        -U0             \
+        --raw           \
+        --diff-filter=AMT |
+    grep -v "^--- \|^@@" |
+    grep "^\+")
+
+if [[ ${FOUND_SWEARING} -ne 0 ]]
+then
+    echo "Preventing commit due to swearing. Add '-n' to override." >&2
+fi
+
+# ---- Cleanup ----
+rm "${SWEARWORDS}"
+
+exit ${FOUND_SWEARING}
+
