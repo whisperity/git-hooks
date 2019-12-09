@@ -27,7 +27,11 @@ then
     echo "$0: failed to create temporary swear file" >&2
     exit 1
 fi
-cat "${SWEARWORDS}" | grep -v "^#" | grep -v -e '^$' > "${SWEARWORDS_TEMP}"
+cat "${SWEARWORDS}" | \
+    grep -v "^#" | \
+    grep -v -e '^$' | \
+    sort | \
+    uniq > "${SWEARWORDS_TEMP}"
 SWEARWORDS="${SWEARWORDS_TEMP}"
 unset SWEARWORDS_TEMP
 
@@ -45,7 +49,7 @@ do
         continue
     fi
 
-    SWEAR_MATCH=$(echo $LINE | cut -c2- | grep -e -E -s -f "${SWEARWORDS}" -)
+    SWEAR_MATCH=$(echo $LINE | cut -c2- | grep -e -E -s -i -f "${SWEARWORDS}" -)
     if [[ $? -eq 0 ]]
     then
         echo "${FILE}: ${SWEAR_MATCH}" >&2

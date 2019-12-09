@@ -22,7 +22,6 @@ penis
 slut
 twat
 bastard
-fuck
 
 #
 # Hungarian swearing
@@ -33,17 +32,13 @@ geci
 picsa
 kurva
 szar
-anyád
-anyad
-apád
-apad
+any[aá]d
+ap[aá]d
 baszdmeg
 baszni
-baszás
-baszas
+basz[aá]s
 dög
-pöcs
-pocs
-pénisz
-penisz
+p[oö]cs
+p[eé]nisz
+tr[aá]gya
 
