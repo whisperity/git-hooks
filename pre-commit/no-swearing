@@ -35,6 +35,12 @@ cat "${SWEARWORDS}" | \
 SWEARWORDS="${SWEARWORDS_TEMP}"
 unset SWEARWORDS_TEMP
 
+COLOUR="always"
+if [[ "${TERM}" == "dumb" || "${TERM}" == "DUMB" ]]
+then
+  COLOUR="auto"
+fi
+
 # ---- Logic ----
 
 FOUND_SWEARING=0
@@ -49,7 +55,7 @@ do
         continue
     fi
 
-    SWEAR_MATCH=$(echo $LINE | cut -c2- | grep -e -E -s -i -f "${SWEARWORDS}" -)
+    SWEAR_MATCH=$(echo $LINE | cut -c2- | grep -E -s -i --color=${COLOUR} -f "${SWEARWORDS}" -)
     if [[ $? -eq 0 ]]
     then
         echo "${FILE}: ${SWEAR_MATCH}" >&2
