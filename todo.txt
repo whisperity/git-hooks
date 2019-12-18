@@ -1,0 +1,7 @@
+# One TODO word per line. Empty lines, and lines beginning with '#' are ignored.
+
+TODO
+FIXME
+QUESTION
+HACK
+

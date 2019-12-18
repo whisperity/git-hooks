@@ -1,0 +1,103 @@
+#!/bin/bash
+#
+# Checks the added lines in the to-be-committed diff for a list of words, and
+# potentially aborts the commit if any is found.
+
+# ---- Setup ----
+
+if [[ $# -lt 2 ]]
+then
+    echo "usage: pos-diff-grepper words-file (diff-cached/diff-prev) [abort-if-found] [abort-msg]" >&2
+    exit 1
+fi
+
+WORDS="$1"
+if [[ ! -f "${WORDS}" ]]
+then
+    echo "No '${WORDS}' file found - bogus setup?" >&2
+    exit 1
+fi
+
+# Cut comments from the swearing file.
+WORDS_TEMP=$(mktemp --suffix="swear")
+if [[ $? -ne 0 ]]
+then
+    echo "$0: failed to create temporary words file" >&2
+    exit 1
+fi
+cat "${WORDS}" | \
+    grep -v "^#" | \
+    grep -v -e '^$' | \
+    sort | \
+    uniq > "${WORDS_TEMP}"
+WORDS="${WORDS_TEMP}"
+unset WORDS_TEMP
+
+COLOUR="always"
+if [[ "${TERM}" == "dumb" || "${TERM}" == "DUMB" ]]
+then
+  COLOUR="auto"
+fi
+
+# ---- Logic ----
+
+DIFF_COMMAND="git diff  \
+    --no-ext-diff     \
+    --dst-prefix=""   \
+    -U0               \
+    --raw             \
+    --diff-filter=AMT "
+if [[ "$2" == "diff-cached" ]]
+then
+    DIFF_COMMAND="${DIFF_COMMAND} --cached"
+elif [[ "$2" == "diff-prev" ]]
+then
+    DIFF_COMMAND="${DIFF_COMMAND} HEAD^..HEAD"
+else
+    echo "Invalid second argument: choose from 'diff-cached' or 'diff-prev'" >&2
+    exit 1
+fi
+
+FOUND_WORDS=0
+FILE="<unknown>"
+while read LINE
+do
+    CHECK_FILE=$(echo $LINE | grep "^+++" - | cut -c5-)
+    if [[ ! -z "${CHECK_FILE}" ]]
+    then
+        # Going forward in the diff indicates a new file's diff is started.
+        FILE=${CHECK_FILE}
+        continue
+    fi
+
+    MATCH=$(echo $LINE | cut -c2- | grep -E -s -i --color=${COLOUR} -f "${WORDS}" -)
+    if [[ $? -eq 0 ]]
+    then
+        echo "${FILE}: ${MATCH}" >&2
+        FOUND_WORDS=1
+    fi
+done <<<$(eval "${DIFF_COMMAND}" |
+    grep -v "^--- \|^@@" |
+    grep "^\+")
+
+if [[ $# -ge 3 && $3 -ne 0 ]]
+then
+    if [[ ${FOUND_WORDS} -ne 0 ]]
+    then
+        if [[ $# -lt 4 ]]
+        then
+            echo "Aborting commit because words were found." >&2
+        else
+            echo "${4}" >&2
+        fi
+    fi
+else
+    # If shouldn't abort, set exit status to 0.
+    FOUND_WORDS=0
+fi
+
+# ---- Cleanup ----
+rm "${WORDS}"
+
+exit ${FOUND_WORDS}
+

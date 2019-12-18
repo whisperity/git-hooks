@@ -1,0 +1,40 @@
+#!/bin/bash
+#
+# Checks the added lines in the to-be-committed diff for TODO-indicating words.
+# This hook does NOT abort the commit.
+
+HOOK_ROOT="$(dirname $0)/.."
+if [[ ! -d "${HOOK_ROOT}" ]]
+then
+    # Script might be running via a symlink...
+    REAL_ME=$(readlink -f $0)
+    HOOK_ROOT="$(dirname ${REAL_ME})/.."
+fi
+
+if [[ ! -d "${HOOK_ROOT}" ]]
+then
+    echo "No proper root found next to hook - bogus setup?" >&2
+    exit 1
+fi
+
+TODO_GREPPER="${HOOK_ROOT}/pos-diff-grepper ${HOOK_ROOT}/todo.txt diff-prev"
+
+# Check for TODOs and suppress the output.
+TERM=dumb ${TODO_GREPPER} 1 "" &>/dev/null
+FOUND_ANY_TODOS=$?
+
+if [[ $FOUND_ANY_TODOS -ne 0 ]]
+then
+    echo "-----------------------------------------------------------------------"
+    echo "TODOs introduced by this commit:"
+    echo ""
+
+    # Check again. For easier use and to allow for colouring the matching
+    # strings, let's just run another grep...
+    ${TODO_GREPPER}
+
+    echo "-----------------------------------------------------------------------"
+fi
+
+exit 0
+
