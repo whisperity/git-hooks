@@ -17,16 +17,19 @@ then
   exit 2
 fi
 
-STATUS=$(git status --porcelain=1 --untracked-files=no --ignored=no)
+STATUS_CMD="git status --porcelain=1 --untracked-files=no --ignored=no"
 
-git-clang-format
+FILES_ADDED_IN_INDEX=$(${STATUS_CMD} | grep "^[MARC]" | awk '{ print $2; }')
+
+STATUS=$(${STATUS_CMD})
+
+git-clang-format ${FILES_ADDED_IN_INDEX}
 if [[ $? -ne 0 ]]
 then
-  echo "Something went wrong with git-clang-format..." >&2
   exit 3
 fi
 
-STATUS_AFTER=$(git status --porcelain=1 --untracked-files=no --ignored=no)
+STATUS_AFTER=$(${STATUS_CMD})
 
 # Calculate the difference git-clang-format's call made, and then cut to the
 # the new (inserted) lines only. Also remove the insertion marker "+".
