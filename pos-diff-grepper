@@ -62,7 +62,7 @@ FOUND_WORDS=0
 FILE="<unknown>"
 while read LINE
 do
-    CHECK_FILE=$(echo $LINE | grep "^+++" - | cut -c5-)
+    CHECK_FILE=$(echo "$LINE" | grep "^+++" - | cut -c5-)
     if [[ ! -z "${CHECK_FILE}" ]]
     then
         # Going forward in the diff indicates a new file's diff is started.
@@ -70,7 +70,7 @@ do
         continue
     fi
 
-    MATCH=$(echo $LINE | cut -c2- | grep -E -s -i --color=${COLOUR} -f "${WORDS}" -)
+    MATCH=$(echo "$LINE" | cut -c2- | grep -E -s -i --color=${COLOUR} -f "${WORDS}" -)
     if [[ $? -eq 0 ]]
     then
         echo "${FILE}: ${MATCH}" >&2
