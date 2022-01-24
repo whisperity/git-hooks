@@ -19,11 +19,12 @@ fi
 
 STATUS_CMD="git status --porcelain=1 --untracked-files=no --ignored=no"
 
-FILES_ADDED_IN_INDEX=$(${STATUS_CMD} | grep "^[MARC]" | awk '{ print $2; }')
+FILES_ADDED_IN_INDEX=$(${STATUS_CMD} | grep "^[MAC]" | awk '{ print $2; }')
+FILES_RENAMED_IN_INDEX=$(${STATUS_CMD} | grep "^R" | awk '{ print $4; }')
 
 STATUS=$(${STATUS_CMD})
 
-git-clang-format ${FILES_ADDED_IN_INDEX}
+git-clang-format ${FILES_ADDED_IN_INDEX} ${FILES_RENAMED_IN_INDEX}
 if [[ $? -ne 0 ]]
 then
   exit 3
