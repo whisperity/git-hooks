@@ -19,7 +19,7 @@ then
 fi
 
 # Cut comments from the swearing file.
-WORDS_TEMP=$(mktemp --suffix="swear")
+WORDS_TEMP=$(mktemp -t "tmp.swear")
 if [[ $? -ne 0 ]]
 then
     echo "$0: failed to create temporary words file" >&2

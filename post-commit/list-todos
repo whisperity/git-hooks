@@ -17,7 +17,7 @@ then
     exit 1
 fi
 
-TODO_GREPPER="${HOOK_ROOT}/pos-diff-grepper ${HOOK_ROOT}/todo.txt diff-prev"
+TODO_GREPPER="${HOOK_ROOT}/usr/libexec/pos-diff-grepper ${HOOK_ROOT}/usr/share/todo.txt diff-prev"
 
 # Check for TODOs and suppress the output.
 TERM=dumb ${TODO_GREPPER} 1 "" &>/dev/null
