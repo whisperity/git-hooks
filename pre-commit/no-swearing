@@ -22,4 +22,3 @@ ${HOOK_ROOT}/usr/libexec/pos-diff-grepper \
     diff-cached \
     1 \
     "Preventing commit due to swearing."
-

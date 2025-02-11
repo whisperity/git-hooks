@@ -76,9 +76,9 @@ do
         echo "${FILE}: ${MATCH}" >&2
         FOUND_WORDS=1
     fi
-done <<<$(eval "${DIFF_COMMAND}" |
+done <<<"$(eval "${DIFF_COMMAND}" |
     grep -v "^--- \|^@@" |
-    grep "^\+")
+    grep "^\+")"
 
 if [[ $# -ge 3 && $3 -ne 0 ]]
 then
@@ -100,4 +100,3 @@ fi
 rm "${WORDS}"
 
 exit ${FOUND_WORDS}
-
